@@ -1,32 +1,17 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
-// Sample initial inventory
-const initialInventory = [
-  { id: 1, name: "Vintage Sony TV", category: "Electronics", price: 45, condition: "Excellent", emoji: "📺", image: "https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=800", description: "25-inch CRT TV. Great picture quality. Perfect for retro gaming setup." },
-  { id: 2, name: "PlayStation 2 + Games", category: "Electronics", price: 60, condition: "Working", emoji: "🎮", image: "https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800", description: "Original PS2 with 2 controllers and 5 game discs. All tested and working." },
-  { id: 3, name: "Large Plush Bear", category: "Toys", price: 15, condition: "Like new", emoji: "🧸", image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800", description: "3-foot tall plush bear. Super soft. Like new condition." },
-  { id: 4, name: "Kite Collection", category: "Toys", price: 10, condition: "New in package", emoji: "🪁", image: "https://images.unsplash.com/photo-1534710961216-75c88202f43e?w=800", description: "3 assorted kites, never opened. Great for weekend fun!" },
-  { id: 5, name: "Ceramic Planters", category: "Home", price: 20, condition: "Excellent", emoji: "🪴", image: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=800", description: "Set of 3 handcrafted ceramic planters. Various sizes." },
-  { id: 6, name: "Luxury Candle Set", category: "Home", price: 12, condition: "New", emoji: "🕯️", image: "https://images.unsplash.com/photo-1602607203243-13f94085d211?w=800", description: "Premium scented candles. Vanilla, sandalwood, and lavender." },
-  { id: 7, name: "Abstract Wall Art", category: "Home", price: 25, condition: "Great", emoji: "🖼️", image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800", description: "24x36 framed canvas. Vibrant colors. Ready to hang." },
-  { id: 8, name: "Red Stiletto Heels", category: "Fashion", price: 18, condition: "Barely worn", emoji: "👠", image: "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=800", description: "Size 8. Worn once to a wedding. Classic red stiletto." },
-  { id: 9, name: "Designer Crossbody", category: "Fashion", price: 35, condition: "Good", emoji: "👜", image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800", description: "Genuine leather. Adjustable strap. Multiple compartments." },
-  { id: 10, name: "Vintage Leather Jacket", category: "Fashion", price: 55, condition: "Classic", emoji: "🧥", image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800", description: "80s style genuine leather. Great patina. Fits medium." },
-]
-
 const categories = ["All", "Electronics", "Toys", "Home", "Fashion"]
 
 // Admin credentials
 const ADMIN_USER = 'leticia'
 const ADMIN_PASS = 'Leticia2026!'
 
+// For now, inventory is loaded from /inventory.json in the repo
+// To make it editable, you need to push changes to GitHub and Vercel will auto-deploy
+
 function App() {
-  // Load inventory from localStorage or use initial inventory
-  const [inventory, setInventory] = useState(() => {
-    const saved = localStorage.getItem('leticia-inventory')
-    return saved ? JSON.parse(saved) : initialInventory
-  })
+  const [inventory, setInventory] = useState([])
   const [filter, setFilter] = useState("All")
   const [showLogin, setShowLogin] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -34,11 +19,21 @@ function App() {
   const [selectedItem, setSelectedItem] = useState(null)
   const [scrolled, setScrolled] = useState(false)
   const [loginError, setLoginError] = useState('')
+  const [loading, setLoading] = useState(true)
 
-  // Save inventory to localStorage whenever it changes
+  // Load inventory from JSON file on mount
   useEffect(() => {
-    localStorage.setItem('leticia-inventory', JSON.stringify(inventory))
-  }, [inventory])
+    fetch('/inventory.json')
+      .then(res => res.json())
+      .then(data => {
+        setInventory(data)
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error('Failed to load inventory:', err)
+        setLoading(false)
+      })
+  }, [])
 
   const [newItem, setNewItem] = useState({ 
     name: '', 
@@ -116,6 +111,22 @@ function App() {
     setNewItem({...newItem, image: ''})
   }
 
+  const handleAddItem = (e) => {
+    e.preventDefault()
+    const item = {
+      ...newItem,
+      id: Date.now(),
+      price: parseFloat(newItem.price) || 0,
+      image: newItem.image || `https://images.unsplash.com/photo-1557683316-973673baf926?w=800&h=400&fit=crop`
+    }
+    const updatedInventory = [item, ...inventory]
+    setInventory(updatedInventory)
+    // Note: Changes are saved locally only. Contact Braxley to push updates to the live site.
+    alert('Item added! Contact Braxley to publish changes to the live site.')
+    setNewItem({ name: '', category: 'Electronics', price: '', condition: '', emoji: '📦', description: '', image: '' })
+    setShowAddForm(false)
+  }
+
   // Edit an existing item
   const handleEditItem = (item) => {
     setNewItem({ ...item })
@@ -130,26 +141,21 @@ function App() {
       ...newItem,
       price: parseFloat(newItem.price) || 0,
     }
-    setInventory(inventory.map(item => item.id === newItem.id ? updatedItem : item))
-    setNewItem({ name: '', category: 'Electronics', price: '', condition: '', emoji: '📦', description: '', image: '' })
-    setShowAddForm(false)
-  }
-
-  const handleAddItem = (e) => {
-    e.preventDefault()
-    const item = {
-      ...newItem,
-      id: Date.now(),
-      price: parseFloat(newItem.price) || 0,
-      image: newItem.image || `https://images.unsplash.com/photo-1557683316-973673baf926?w=800&h=400&fit=crop`
-    }
-    setInventory([item, ...inventory])
+    const updatedInventory = inventory.map(item => item.id === newItem.id ? updatedItem : item)
+    setInventory(updatedInventory)
+    // Note: Changes are saved locally only. Contact Braxley to push updates to the live site.
+    alert('Item updated! Contact Braxley to publish changes to the live site.')
     setNewItem({ name: '', category: 'Electronics', price: '', condition: '', emoji: '📦', description: '', image: '' })
     setShowAddForm(false)
   }
 
   const handleDeleteItem = (id) => {
-    setInventory(inventory.filter(item => item.id !== id))
+    if (confirm('Are you sure you want to delete this item?')) {
+      const updatedInventory = inventory.filter(item => item.id !== id)
+      setInventory(updatedInventory)
+      // Note: Changes are saved locally only. Contact Braxley to push updates to the live site.
+      alert('Item deleted! Contact Braxley to publish changes to the live site.')
+    }
   }
 
   const handleLogin = (e) => {
@@ -238,7 +244,7 @@ function App() {
         </div>
         <div className="hero-stats">
           <div className="stat-card">
-            <span className="stat-number">{inventory.length}</span>
+            <span className="stat-number">{loading ? '...' : inventory.length}</span>
             <span className="stat-label">Items</span>
           </div>
           <div className="stat-card">
@@ -307,7 +313,7 @@ function App() {
         <section className="admin-section">
           <div className="admin-header">
             <h2>🛠️ Inventory Manager</h2>
-            <button className="add-item-btn" onClick={() => setShowAddForm(!showAddForm)}>
+            <button className="add-item-btn" onClick={() => { setShowAddForm(!showAddForm); setNewItem({ name: '', category: 'Electronics', price: '', condition: '', emoji: '📦', description: '', image: '' }); }}>
               {showAddForm ? '✕ Cancel' : '+ Add New Item'}
             </button>
           </div>
