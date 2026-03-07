@@ -22,7 +22,11 @@ const ADMIN_USER = 'leticia'
 const ADMIN_PASS = 'Leticia2026!'
 
 function App() {
-  const [inventory, setInventory] = useState(initialInventory)
+  // Load inventory from localStorage or use initial inventory
+  const [inventory, setInventory] = useState(() => {
+    const saved = localStorage.getItem('leticia-inventory')
+    return saved ? JSON.parse(saved) : initialInventory
+  })
   const [filter, setFilter] = useState("All")
   const [showLogin, setShowLogin] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -30,6 +34,11 @@ function App() {
   const [selectedItem, setSelectedItem] = useState(null)
   const [scrolled, setScrolled] = useState(false)
   const [loginError, setLoginError] = useState('')
+
+  // Save inventory to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('leticia-inventory', JSON.stringify(inventory))
+  }, [inventory])
 
   const [newItem, setNewItem] = useState({ 
     name: '', 
@@ -100,6 +109,30 @@ function App() {
   // Handle URL input for images
   const handleImageUrlChange = (e) => {
     setNewItem({...newItem, image: e.target.value})
+  }
+
+  // Clear the current image
+  const clearImage = () => {
+    setNewItem({...newItem, image: ''})
+  }
+
+  // Edit an existing item
+  const handleEditItem = (item) => {
+    setNewItem({ ...item })
+    setShowAddForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // Update an existing item
+  const handleUpdateItem = (e) => {
+    e.preventDefault()
+    const updatedItem = {
+      ...newItem,
+      price: parseFloat(newItem.price) || 0,
+    }
+    setInventory(inventory.map(item => item.id === newItem.id ? updatedItem : item))
+    setNewItem({ name: '', category: 'Electronics', price: '', condition: '', emoji: '📦', description: '', image: '' })
+    setShowAddForm(false)
   }
 
   const handleAddItem = (e) => {
@@ -280,7 +313,7 @@ function App() {
           </div>
           
           {showAddForm && (
-            <form className="add-form" onSubmit={handleAddItem}>
+            <form className="add-form" onSubmit={newItem.id ? handleUpdateItem : handleAddItem}>
               <input 
                 type="text" 
                 placeholder="Item name *" 
@@ -327,7 +360,12 @@ function App() {
                     disabled={uploading}
                   />
                 </label>
-                {newItem.image && <span className="image-uploaded">✓ Image loaded</span>}
+                {newItem.image && (
+                  <>
+                    <span className="image-uploaded">✓ Image loaded</span>
+                    <button type="button" onClick={clearImage} style={{background: '#E74C3C', border: 'none', color: 'white', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', marginLeft: '10px'}}>✕ Clear</button>
+                  </>
+                )}
               </div>
               <input 
                 type="url" 
@@ -344,7 +382,14 @@ function App() {
                 rows={3}
                 required
               />
-              <button type="submit" className="submit-btn">Add to Inventory</button>
+              <button type="submit" className="submit-btn">
+                {newItem.id ? '✓ Update Item' : '+ Add to Inventory'}
+              </button>
+              {newItem.id && (
+                <button type="button" className="submit-btn" style={{background: '#E74C3C'}} onClick={() => { setNewItem({ name: '', category: 'Electronics', price: '', condition: '', emoji: '📦', description: '', image: '' }); setShowAddForm(false); }}>
+                  Cancel Edit
+                </button>
+              )}
             </form>
           )}
           
@@ -372,6 +417,7 @@ function App() {
                     <td>{item.category}</td>
                     <td>${item.price}</td>
                     <td>
+                      <button className="edit-btn" onClick={() => handleEditItem(item)} style={{background: '#3498DB', border: 'none', color: 'white', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', marginRight: '8px'}}>✏️ Edit</button>
                       <button className="delete-btn" onClick={() => handleDeleteItem(item.id)}>🗑️</button>
                     </td>
                   </tr>
