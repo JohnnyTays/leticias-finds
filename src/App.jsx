@@ -17,6 +17,10 @@ const initialInventory = [
 
 const categories = ["All", "Electronics", "Toys", "Home", "Fashion"]
 
+// Admin credentials
+const ADMIN_USER = 'leticia'
+const ADMIN_PASS = 'Leticia2026!'
+
 function App() {
   const [inventory, setInventory] = useState(initialInventory)
   const [filter, setFilter] = useState("All")
@@ -25,6 +29,7 @@ function App() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null)
   const [scrolled, setScrolled] = useState(false)
+  const [loginError, setLoginError] = useState('')
 
   const [newItem, setNewItem] = useState({ 
     name: '', 
@@ -76,9 +81,17 @@ function App() {
 
   const handleLogin = (e) => {
     e.preventDefault()
-    // Auto-login for demo - accepts anything
-    setIsLoggedIn(true)
-    setShowLogin(false)
+    const formData = new FormData(e.target)
+    const username = formData.get('username')
+    const password = formData.get('password')
+    
+    if (username === ADMIN_USER && password === ADMIN_PASS) {
+      setIsLoggedIn(true)
+      setShowLogin(false)
+      setLoginError('')
+    } else {
+      setLoginError('Invalid username or password')
+    }
   }
 
   const handleLogout = () => {
@@ -337,16 +350,17 @@ function App() {
 
       {/* Login Modal */}
       {showLogin && (
-        <div className="modal-overlay" onClick={() => setShowLogin(false)}>
+        <div className="modal-overlay" onClick={() => { setShowLogin(false); setLoginError(''); }}>
           <div className="login-modal" onClick={e => e.stopPropagation()}>
-            <button className="close-modal" onClick={() => setShowLogin(false)}>✕</button>
+            <button className="close-modal" onClick={() => { setShowLogin(false); setLoginError(''); }}>✕</button>
             <div className="modal-gem">💎</div>
             <h2>Admin Login</h2>
-            <p>Demo: enter anything</p>
+            <p>Enter your credentials</p>
             <form onSubmit={handleLogin}>
-              <input type="text" placeholder="Username" defaultValue="#111" />
-              <input type="password" placeholder="Password" defaultValue="#111" />
-              <button type="submit" className="login-submit">Enter</button>
+              <input type="text" name="username" placeholder="Username" required />
+              <input type="password" name="password" placeholder="Password" required />
+              {loginError && <p style={{color: '#E74C3C', marginBottom: '10px'}}>{loginError}</p>}
+              <button type="submit" className="login-submit">Login</button>
             </form>
           </div>
         </div>
