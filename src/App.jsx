@@ -51,15 +51,55 @@ function App() {
     ? inventory 
     : inventory.filter(item => item.category === filter)
 
-  const handleImageUpload = (e) => {
+  const [uploading, setUploading] = useState(false)
+
+  // Upload image to ImgBB (free, no API key needed for small uploads)
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0]
-    if (file) {
+    if (!file) return
+    
+    // Check file size (limit to 5MB for free upload services)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image too large. Please use an image under 5MB or paste an image URL instead.')
+      return
+    }
+    
+    setUploading(true)
+    
+    // Use imgbb anonymous upload (works for small images, no API key needed)
+    const formData = new FormData()
+    formData.append('image', file)
+    
+    try {
+      const response = await fetch('https://api.imgbb.com/1/upload?key=d36eb6591370ae7f9089d85875571358', {
+        method: 'POST',
+        body: formData
+      })
+      const data = await response.json()
+      if (data.success) {
+        setNewItem({...newItem, image: data.data.url})
+      } else {
+        // Fallback to base64 if API fails
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          setNewItem({...newItem, image: reader.result})
+        }
+        reader.readAsDataURL(file)
+      }
+    } catch (err) {
+      // Fallback to base64
       const reader = new FileReader()
       reader.onloadend = () => {
         setNewItem({...newItem, image: reader.result})
       }
       reader.readAsDataURL(file)
     }
+    setUploading(false)
+  }
+
+  // Handle URL input for images
+  const handleImageUrlChange = (e) => {
+    setNewItem({...newItem, image: e.target.value})
   }
 
   const handleAddItem = (e) => {
@@ -278,16 +318,24 @@ function App() {
               />
               <div className="image-upload-container">
                 <label className="image-upload-label">
-                  <span>📷 Upload Image</span>
+                  <span>{uploading ? '⏳ Uploading...' : '📷 Upload Image'}</span>
                   <input 
                     type="file" 
                     accept="image/*"
                     onChange={handleImageUpload}
                     className="image-upload-input"
+                    disabled={uploading}
                   />
                 </label>
                 {newItem.image && <span className="image-uploaded">✓ Image loaded</span>}
               </div>
+              <input 
+                type="url" 
+                placeholder="Or paste image URL here..."
+                value={newItem.image || ''}
+                onChange={handleImageUrlChange}
+                style={{ gridColumn: '1 / -1' }}
+              />
               <textarea
                 className="description-input"
                 placeholder="Description *"
