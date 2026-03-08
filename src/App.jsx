@@ -15,10 +15,9 @@ const loadInventory = async () => {
   } catch { return [] }
 }
 
-// Save - shows link to edit directly
+// Save - download JSON for manual upload
 const saveInventory = async (inventory) => {
   const json = JSON.stringify(inventory, null, 2)
-  // Create a data URL for download
   const blob = new Blob([json], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -26,7 +25,7 @@ const saveInventory = async (inventory) => {
   a.download = 'inventory.json'
   a.click()
   URL.revokeObjectURL(url)
-  alert('Downloaded inventory.json. Contact Braxley to upload to GitHub to publish.')
+  alert('Downloaded! Send to Braxley to publish.')
   return true
 }
 
