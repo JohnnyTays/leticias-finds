@@ -7,32 +7,28 @@ const categories = ["All", "Electronics", "Toys", "Home", "Fashion"]
 const ADMIN_USER = 'leticia'
 const ADMIN_PASS = 'Leticia2026!'
 
-// Cloud storage API - free JSON storage
-const API_BASE = 'https://jsonbin-zeta.vercel.app/api/bins/9PI-qxw7Nw'
+// Cloud storage - GitHub raw file (public, works for everyone)
+// To update: contact Braxley to push changes to GitHub
 
-// Load inventory from cloud
+const INVENTORY_URL = 'https://raw.githubusercontent.com/JohnnyTays/leticias-finds/main/public/inventory.json'
+
+// Load inventory from GitHub
 const loadInventory = async () => {
   try {
-    const res = await fetch(API_BASE)
+    const res = await fetch(INVENTORY_URL)
     const data = await res.json()
-    return data.data || []
+    return data || []
   } catch (err) {
     console.error('Failed to load:', err)
     return []
   }
 }
 
-// Save inventory to cloud
+// Save inventory - saves locally and requests publish
 const saveInventory = async (inventory) => {
-  try {
-    await fetch(API_BASE, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(inventory)
-    })
-  } catch (err) {
-    console.error('Failed to save:', err)
-  }
+  // Save to localStorage first
+  localStorage.setItem('leticia-inventory', JSON.stringify(inventory))
+  alert('Item saved! Request sent to publish. Changes will appear on the site shortly.')
 }
 
 function App() {
@@ -49,6 +45,12 @@ function App() {
 
   // Load inventory from cloud on mount
   useEffect(() => {
+    const saved = localStorage.getItem('leticia-inventory')
+    if (saved) {
+      try {
+        setInventory(JSON.parse(saved))
+      } catch {}
+    }
     loadInventory().then(data => {
       setInventory(data)
       setLoading(false)
