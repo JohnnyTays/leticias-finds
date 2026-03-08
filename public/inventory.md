@@ -1,4 +1,4 @@
-# Leticia's Gem 🖤💜❤️⚪
+# Latisha's Gem 🖤💜❤️⚪
 
 An exclusive resale boutique featuring curated finds — from vintage treasures to modern gems. Local pickup available.
 
@@ -26,7 +26,7 @@ An exclusive resale boutique featuring curated finds — from vintage treasures 
 
 📱 **Text/Call:** [Your Number]
 
-💬 **Email:** leticia@example.com
+💬 **Email:** latisha@example.com
 
 ---
 
