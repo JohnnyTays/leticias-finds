@@ -7,34 +7,26 @@ const categories = ["All", "Electronics", "Toys", "Home", "Fashion"]
 const ADMIN_USER = 'leticia'
 const ADMIN_PASS = 'Leticia2026!'
 
-// Google Sheet ID - replace with your sheet
-const SHEET_ID = '1KnjzsqPi3vjC6nkKfg9sD_4eiDkLqlm3cDdN_5It0bw'
-
-// Load from Google Sheets (published as CSV)
+// Load from GitHub (public, works for everyone)
 const loadInventory = async () => {
   try {
-    const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`)
-    const text = await res.text()
-    const lines = text.trim().split('\n')
-    if (lines.length < 2) return []
-    
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''))
-    
-    return lines.slice(1).map(line => {
-      const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/"/g, ''))
-      const item = {}
-      headers.forEach((h, i) => item[h] = values[i] || '')
-      return item
-    }).filter(item => item.id)
-  } catch (err) {
-    console.error('Load error:', err)
-    return []
-  }
+    const res = await fetch('https://raw.githubusercontent.com/JohnnyTays/leticias-finds/main/public/inventory.json')
+    return await res.json() || []
+  } catch { return [] }
 }
 
-// Save - shows message (Google Sheets write needs separate setup)
+// Save - shows link to edit directly
 const saveInventory = async (inventory) => {
-  alert('To save changes, add/edit items directly in Google Sheets: https://docs.google.com/spreadsheets/d/' + SHEET_ID)
+  const json = JSON.stringify(inventory, null, 2)
+  // Create a data URL for download
+  const blob = new Blob([json], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'inventory.json'
+  a.click()
+  URL.revokeObjectURL(url)
+  alert('Downloaded inventory.json. Contact Braxley to upload to GitHub to publish.')
   return true
 }
 
