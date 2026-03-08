@@ -7,22 +7,34 @@ const categories = ["All", "Electronics", "Toys", "Home", "Fashion"]
 const ADMIN_USER = 'leticia'
 const ADMIN_PASS = 'Leticia2026!'
 
-// Load from localStorage or GitHub
+// Google Sheet ID - replace with your sheet
+const SHEET_ID = '1KnjzsqPi3vjC6nkKfg9sD_4eiDkLqlm3cDdN_5It0bw'
+
+// Load from Google Sheets (published as CSV)
 const loadInventory = async () => {
-  const saved = localStorage.getItem('leticia-inventory')
-  if (saved) {
-    try { return JSON.parse(saved) } catch {}
-  }
   try {
-    const res = await fetch('https://raw.githubusercontent.com/JohnnyTays/leticias-finds/main/public/inventory.json')
-    return await res.json() || []
-  } catch { return [] }
+    const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`)
+    const text = await res.text()
+    const lines = text.trim().split('\n')
+    if (lines.length < 2) return []
+    
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''))
+    
+    return lines.slice(1).map(line => {
+      const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/"/g, ''))
+      const item = {}
+      headers.forEach((h, i) => item[h] = values[i] || '')
+      return item
+    }).filter(item => item.id)
+  } catch (err) {
+    console.error('Load error:', err)
+    return []
+  }
 }
 
-// Save to localStorage - for real cloud sync, we need backend
+// Save - shows message (Google Sheets write needs separate setup)
 const saveInventory = async (inventory) => {
-  localStorage.setItem('leticia-inventory', JSON.stringify(inventory))
-  alert('Saved locally. Contact Braxley to publish changes.')
+  alert('To save changes, add/edit items directly in Google Sheets: https://docs.google.com/spreadsheets/d/' + SHEET_ID)
   return true
 }
 

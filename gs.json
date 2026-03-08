@@ -1,0 +1,46 @@
+// Google Apps Script - Deploy as Web App
+// 1. Go to script.google.com -> New Project
+// 2. Paste this code
+// 3. Deploy -> New Deployment -> Web App
+// 4. Execute as: Me, Who has access: Anyone
+// 5. Copy the URL and replace in App.jsx
+
+const SHEET_NAME = 'Inventory';
+
+const doGet = () => {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME) 
+    || SpreadsheetApp.getActiveSpreadsheet().insertSheet(SHEET_NAME);
+  
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const items = data.slice(1).map(row => {
+    const item = {};
+    headers.forEach((h, i) => item[h.toLowerCase()] = row[i]);
+    return item;
+  });
+  
+  return ContentService.createTextOutput(JSON.stringify(items))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+const doPost = (e) => {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME) 
+    || SpreadsheetApp.getActiveSpreadsheet().insertSheet(SHEET_NAME);
+  
+  const inventory = JSON.parse(e.postData.contents);
+  sheet.clear();
+  
+  // Headers
+  const headers = ['id', 'name', 'category', 'price', 'condition', 'emoji', 'image', 'description'];
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  
+  // Data
+  const rows = inventory.map(item => [
+    item.id, item.name, item.category, item.price, 
+    item.condition, item.emoji, item.image, item.description
+  ]);
+  sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+  
+  return ContentService.createTextOutput(JSON.stringify({success: true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}

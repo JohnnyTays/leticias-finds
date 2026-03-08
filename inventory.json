@@ -1,0 +1,12 @@
+[
+  {"id":1,"name":"Vintage Sony TV","emoji":"📺","image":"https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=800","price":45,"category":"Electronics","condition":"Excellent","description":"25-inch CRT TV. Great picture quality."},
+  {"id":2,"name":"PlayStation 2 + Games","emoji":"🎮","image":"https://images.unsplash.com/photo-1606144042614-b2417e99c4e3?w=800","price":60,"category":"Electronics","condition":"Working","description":"Original PS2 with 2 controllers and 5 game discs."},
+  {"id":3,"name":"Large Plush Bear","emoji":"🧸","image":"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800","price":15,"category":"Toys","condition":"Like new","description":"3-foot tall plush bear. Super soft."},
+  {"id":4,"name":"Kite Collection","emoji":"🪁","image":"https://images.unsplash.com/photo-1534710961216-75c88202f43e?w=800","price":10,"category":"Toys","condition":"New in package","description":"3 assorted kites, never opened."},
+  {"id":5,"name":"Ceramic Planters","emoji":"🪴","image":"https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=800","price":20,"category":"Home","condition":"Excellent","description":"Set of 3 handcrafted ceramic planters."},
+  {"id":6,"name":"Luxury Candle Set","emoji":"🕯️","image":"https://images.unsplash.com/photo-1602607203243-13f94085d211?w=800","price":12,"category":"Home","condition":"New","description":"Premium scented candles."},
+  {"id":7,"name":"Abstract Wall Art","emoji":"🖼️","image":"https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=800","price":25,"category":"Home","condition":"Great","description":"24x36 framed canvas."},
+  {"id":8,"name":"Red Stiletto Heels","emoji":"👠","image":"https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=800","price":18,"category":"Fashion","condition":"Barely worn","description":"Size 8. Classic red stiletto."},
+  {"id":9,"name":"Designer Crossbody","emoji":"👜","image":"https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800","price":35,"category":"Fashion","condition":"Good","description":"Genuine leather crossbody bag."},
+  {"id":10,"name":"Vintage Leather Jacket","emoji":"🧥","image":"https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800","price":55,"category":"Fashion","condition":"Classic","description":"80s style genuine leather jacket."}
+]
