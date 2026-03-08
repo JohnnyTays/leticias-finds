@@ -7,8 +7,33 @@ const categories = ["All", "Electronics", "Toys", "Home", "Fashion"]
 const ADMIN_USER = 'leticia'
 const ADMIN_PASS = 'Leticia2026!'
 
-// For now, inventory is loaded from /inventory.json in the repo
-// To make it editable, you need to push changes to GitHub and Vercel will auto-deploy
+// Cloud storage API - free JSON storage
+const API_BASE = 'https://jsonbin-zeta.vercel.app/api/bins/9PI-qxw7Nw'
+
+// Load inventory from cloud
+const loadInventory = async () => {
+  try {
+    const res = await fetch(API_BASE)
+    const data = await res.json()
+    return data.data || []
+  } catch (err) {
+    console.error('Failed to load:', err)
+    return []
+  }
+}
+
+// Save inventory to cloud
+const saveInventory = async (inventory) => {
+  try {
+    await fetch(API_BASE, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(inventory)
+    })
+  } catch (err) {
+    console.error('Failed to save:', err)
+  }
+}
 
 function App() {
   const [inventory, setInventory] = useState([])
@@ -20,19 +45,14 @@ function App() {
   const [scrolled, setScrolled] = useState(false)
   const [loginError, setLoginError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-  // Load inventory from JSON file on mount
+  // Load inventory from cloud on mount
   useEffect(() => {
-    fetch('/inventory.json')
-      .then(res => res.json())
-      .then(data => {
-        setInventory(data)
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error('Failed to load inventory:', err)
-        setLoading(false)
-      })
+    loadInventory().then(data => {
+      setInventory(data)
+      setLoading(false)
+    })
   }, [])
 
   const [newItem, setNewItem] = useState({ 
@@ -57,20 +77,17 @@ function App() {
 
   const [uploading, setUploading] = useState(false)
 
-  // Upload image to ImgBB (free, no API key needed for small uploads)
+  // Upload image to ImgBB
   const handleImageUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
     
-    // Check file size (limit to 5MB for free upload services)
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image too large. Please use an image under 5MB or paste an image URL instead.')
+      alert('Image too large. Please use under 5MB or paste URL.')
       return
     }
     
     setUploading(true)
-    
-    // Use imgbb anonymous upload (works for small images, no API key needed)
     const formData = new FormData()
     formData.append('image', file)
     
@@ -82,37 +99,22 @@ function App() {
       const data = await response.json()
       if (data.success) {
         setNewItem({...newItem, image: data.data.url})
-      } else {
-        // Fallback to base64 if API fails
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          setNewItem({...newItem, image: reader.result})
-        }
-        reader.readAsDataURL(file)
       }
-    } catch (err) {
-      // Fallback to base64
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setNewItem({...newItem, image: reader.result})
-      }
-      reader.readAsDataURL(file)
-    }
+    } catch (err) {}
     setUploading(false)
   }
 
-  // Handle URL input for images
   const handleImageUrlChange = (e) => {
     setNewItem({...newItem, image: e.target.value})
   }
 
-  // Clear the current image
   const clearImage = () => {
     setNewItem({...newItem, image: ''})
   }
 
-  const handleAddItem = (e) => {
+  const handleAddItem = async (e) => {
     e.preventDefault()
+    setSaving(true)
     const item = {
       ...newItem,
       id: Date.now(),
@@ -121,40 +123,40 @@ function App() {
     }
     const updatedInventory = [item, ...inventory]
     setInventory(updatedInventory)
-    // Note: Changes are saved locally only. Contact Braxley to push updates to the live site.
-    alert('Item added! Contact Braxley to publish changes to the live site.')
+    await saveInventory(updatedInventory)
+    setSaving(false)
     setNewItem({ name: '', category: 'Electronics', price: '', condition: '', emoji: '📦', description: '', image: '' })
     setShowAddForm(false)
+    alert('Item added successfully!')
   }
 
-  // Edit an existing item
   const handleEditItem = (item) => {
     setNewItem({ ...item })
     setShowAddForm(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  // Update an existing item
-  const handleUpdateItem = (e) => {
+  const handleUpdateItem = async (e) => {
     e.preventDefault()
-    const updatedItem = {
-      ...newItem,
-      price: parseFloat(newItem.price) || 0,
-    }
+    setSaving(true)
+    const updatedItem = { ...newItem, price: parseFloat(newItem.price) || 0 }
     const updatedInventory = inventory.map(item => item.id === newItem.id ? updatedItem : item)
     setInventory(updatedInventory)
-    // Note: Changes are saved locally only. Contact Braxley to push updates to the live site.
-    alert('Item updated! Contact Braxley to publish changes to the live site.')
+    await saveInventory(updatedInventory)
+    setSaving(false)
     setNewItem({ name: '', category: 'Electronics', price: '', condition: '', emoji: '📦', description: '', image: '' })
     setShowAddForm(false)
+    alert('Item updated successfully!')
   }
 
-  const handleDeleteItem = (id) => {
-    if (confirm('Are you sure you want to delete this item?')) {
+  const handleDeleteItem = async (id) => {
+    if (confirm('Delete this item?')) {
+      setSaving(true)
       const updatedInventory = inventory.filter(item => item.id !== id)
       setInventory(updatedInventory)
-      // Note: Changes are saved locally only. Contact Braxley to push updates to the live site.
-      alert('Item deleted! Contact Braxley to publish changes to the live site.')
+      await saveInventory(updatedInventory)
+      setSaving(false)
+      alert('Item deleted!')
     }
   }
 
@@ -388,8 +390,8 @@ function App() {
                 rows={3}
                 required
               />
-              <button type="submit" className="submit-btn">
-                {newItem.id ? '✓ Update Item' : '+ Add to Inventory'}
+              <button type="submit" className="submit-btn" disabled={saving}>
+                {saving ? '⏳ Saving...' : (newItem.id ? '✓ Update Item' : '+ Add to Inventory')}
               </button>
               {newItem.id && (
                 <button type="button" className="submit-btn" style={{background: '#E74C3C'}} onClick={() => { setNewItem({ name: '', category: 'Electronics', price: '', condition: '', emoji: '📦', description: '', image: '' }); setShowAddForm(false); }}>
@@ -424,7 +426,7 @@ function App() {
                     <td>${item.price}</td>
                     <td>
                       <button className="edit-btn" onClick={() => handleEditItem(item)} style={{background: '#3498DB', border: 'none', color: 'white', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', marginRight: '8px'}}>✏️ Edit</button>
-                      <button className="delete-btn" onClick={() => handleDeleteItem(item.id)}>🗑️</button>
+                      <button className="delete-btn" onClick={() => handleDeleteItem(item.id)} disabled={saving}>🗑️</button>
                     </td>
                   </tr>
                 ))}
