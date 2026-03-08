@@ -4,8 +4,8 @@ import './App.css'
 const categories = ["All", "Electronics", "Toys", "Home", "Fashion"]
 
 // Admin credentials
-const ADMIN_USER = 'leticia'
-const ADMIN_PASS = 'Leticia2026!'
+const ADMIN_USER = 'latisha'
+const ADMIN_PASS = 'Latisha2026!'
 
 // Load from GitHub (public, works for everyone)
 const loadInventory = async () => {
@@ -126,7 +126,7 @@ function App() {
         <div className="header-content">
           <div className="logo-section">
             <div className="logo-icon"><span className="logo-shimmer">💎</span></div>
-            <div className="logo-text"><h1>Leticia's Gem</h1><p className="tagline">✨ Curated Finds • Local Pickup ✨</p></div>
+            <div className="logo-text"><h1>Latisha's Gem</h1><p className="tagline">✨ Curated Finds • Local Pickup ✨</p></div>
           </div>
           <nav className="nav-links">
             <button className="nav-btn" onClick={() => document.querySelector('.inventory-section')?.scrollIntoView({behavior:'smooth'})}>Shop</button>
@@ -199,7 +199,7 @@ function App() {
 
       <footer className="footer">
         <div className="contact-section"><h2>📍 Tucson, AZ</h2><p>Text or call to schedule pickup</p></div>
-        <p className="copyright">© 2026 Leticia's Gem 💜</p>
+        <p className="copyright">© 2026 Latisha's Gem 💜</p>
       </footer>
 
       {showLogin && <div className="modal-overlay" onClick={() => {setShowLogin(false);setLoginError('')}}><div className="login-modal" onClick={e => e.stopPropagation()}>
