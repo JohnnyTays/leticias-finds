@@ -198,7 +198,13 @@ function App() {
       )}
 
       <footer className="footer">
-        <div className="contact-section"><h2>📍 Tucson, AZ</h2><p>Text or call to schedule pickup</p></div>
+        <div className="contact-section">
+          <h2>📍 Tucson, AZ</h2>
+          <p>Click below to contact Latisha</p>
+          <a href="mailto:latishamyisha@yahoo.com?subject=Interested in your curated finds" className="contact-email-btn">
+            📧 Contact Latisha
+          </a>
+        </div>
         <p className="copyright">© 2026 Latisha's Gem 💜</p>
       </footer>
 
@@ -213,7 +219,7 @@ function App() {
         <button className="close-modal" onClick={() => setSelectedItem(null)}>✕</button>
         <div className="item-modal-image"><img src={selectedItem.image} alt={selectedItem.name} /><div className="item-modal-badge">{selectedItem.emoji}</div></div>
         <div className="item-modal-content"><span className="item-modal-category">{selectedItem.category}</span><h2>{selectedItem.name}</h2><p className="item-modal-price">${selectedItem.price}</p><p className="item-modal-condition">Condition: {selectedItem.condition}</p><p className="item-modal-description">{selectedItem.description}</p>
-          <button className="contact-btn" onClick={() => document.querySelector('.contact-section')?.scrollIntoView({behavior:'smooth'})}>📱 Contact</button></div>
+          <button className="contact-btn" onClick={() => window.location.href = 'mailto:latishamyisha@yahoo.com?subject=Interested in ' + encodeURIComponent(selectedItem.name)}>📧 Contact Latisha</button></div>
       </div></div>}
     </div>
   )
