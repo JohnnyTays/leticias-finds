@@ -7,25 +7,34 @@ const categories = ["All", "Electronics", "Toys", "Home", "Fashion"]
 const ADMIN_USER = 'latisha'
 const ADMIN_PASS = 'Latisha2026!'
 
-// Load from GitHub (public, works for everyone)
+// Load inventory - from cloud (Gist)
 const loadInventory = async () => {
   try {
-    const res = await fetch('https://raw.githubusercontent.com/JohnnyTays/leticias-finds/main/public/inventory.json')
-    return await res.json() || []
-  } catch { return [] }
+    const res = await fetch('/api/sheets')
+    const data = await res.json()
+    if (Array.isArray(data) && data.length > 0) return data
+  } catch {}
+  // Fallback to localStorage
+  const saved = localStorage.getItem('latisha_inventory')
+  if (saved) return JSON.parse(saved)
+  return []
 }
 
-// Save - download JSON for manual upload
+// Save - to cloud (instant for customers)
 const saveInventory = async (inventory) => {
-  const json = JSON.stringify(inventory, null, 2)
-  const blob = new Blob([json], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'inventory.json'
-  a.click()
-  URL.revokeObjectURL(url)
-  alert('Downloaded! Send to Braxley to publish.')
+  localStorage.setItem('latisha_inventory', JSON.stringify(inventory))
+  try {
+    const res = await fetch('/api/sheets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inventory })
+    })
+    if (res.ok) {
+      alert('Saved to cloud!')
+      return true
+    }
+  } catch {}
+  alert('Saved locally')
   return true
 }
 
